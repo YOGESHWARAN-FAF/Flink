@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Link Sentinel | Advanced Fake Link Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            color: #f1f5f9;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #22d3ee 0%, #06b6d4 30%, #3b82f6 70%, #6366f1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(2, 8, 24, 0.4);
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .glow-on-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .glow-on-hover:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Loader Styles */
+        .loader-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .loader {
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+        
+        .loader:before, .loader:after {
+            content: '';
+            position: absolute;
+            border-width: 5px;
+            border-style: solid;
+            opacity: 0;
+            border-radius: 50%;
+            animation: pulse 2s linear infinite;
+        }
+        
+        .loader:before {
+            width: 100%;
+            height: 100%;
+            border-color: #22d3ee;
+            animation-delay: 0s;
+        }
+        
+        .loader:after {
+            width: 70%;
+            height: 70%;
+            border-color: #3b82f6;
+            animation-delay: 0.5s;
+            top: 15%;
+            left: 15%;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .progress-text {
+            margin-top: 24px;
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            text-align: center;
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #22d3ee, #3b82f6);
+            border-radius: 10px;
+        }
+        
+        /* Animated background for main card */
+        .animated-bg {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .animated-bg:before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(34, 211, 238, 0.1) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(34, 211, 238, 0.1) 100%);
+            animation: gradientShift 15s ease infinite;
+            z-index: -1;
+        }
+        
+        @keyframes gradientShift {
+            0% { transform: translate(-25%, -25%) rotate(0deg); }
+            100% { transform: translate(-25%, -25%) rotate(360deg); }
+        }
+        
+        /* Status indicators */
+        .status-safe {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
+            border-left: 4px solid #10b981;
+        }
+        
+        .status-warning {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%);
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .status-danger {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+            border-left: 4px solid #ef4444;
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #06b6d4 0%, #2563eb 100%);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn-download {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(90deg, #059669 0%, #047857 100%);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        /* Section spacing */
+        .section-spacing {
+            margin-bottom: 2rem;
+        }
+        
+        /* Input field styling */
+        .input-field {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: #22d3ee;
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Loader -->
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <div class="progress-text">
+            <span id="progress">0%</span> - Analyzing URL Security...
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12 max-w-6xl">
+        <!-- Header Section -->
+        <header class="text-center mb-16">
+            <div class="floating inline-block mb-6">
+                <div class="relative">
+                    <i class="fas fa-shield-alt text-6xl text-cyan-400"></i>
+                    <i class="fas fa-bolt text-2xl text-yellow-300 absolute -top-2 -right-3"></i>
+                </div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                <span class="gradient-text">AI Link Sentinel</span>
+            </h1>
+            <p class="text-xl text-blue-200 max-w-3xl mx-auto leading-relaxed">
+                Advanced AI-powered protection against malicious links and online threats
+            </p>
+        </header>
+
+        <!-- Main Form Section -->
+        <div class="max-w-3xl mx-auto mb-16">
+            <div class="glass-card rounded-2xl p-8 card-hover animated-bg">
+                <form method="POST" action="/" id="urlForm" class="space-y-8">
+                    <div>
+                        <label for="url" class="block text-lg font-medium text-blue-100 mb-4">
+                            <i class="fas fa-link mr-3 text-cyan-400"></i> Enter URL to analyze
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="url" 
+                                name="url" 
+                                placeholder="https://example.com" 
+                                required
+                                class="w-full px-6 py-4 rounded-xl input-field text-white placeholder-blue-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            >
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                                <i class="fas fa-search text-blue-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <button 
+                        type="submit" 
+                        class="w-full btn-primary text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center text-lg"
+                    >
+                        <i class="fas fa-shield-virus mr-3"></i> Analyze URL Security
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        {% if result %}
+        <div class="glass-card rounded-2xl shadow-xl overflow-hidden fade-in mb-16" id="report-content">
+            <div class="bg-gradient-to-r from-cyan-900 to-blue-900 p-8">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-file-alt mr-4 text-cyan-300"></i> Security Analysis Report
+                    </h2>
+                    <span class="text-sm text-blue-200">{{ now }}</span>
+                </div>
+            </div>
+            
+            <div class="p-8 space-y-8">
+                <!-- Basic Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-xl status-safe">
+                        <h3 class="text-xl font-semibold mb-4 text-cyan-300 flex items-center">
+                            <i class="fas fa-globe mr-3"></i> URL Information
+                        </h3>
+                        <div class="space-y-3">
+                            <p><span class="font-medium text-blue-200">URL:</span> <span class="text-blue-100 block truncate">{{ result.url }}</span></p>
+                            <p><span class="font-medium text-blue-200">Domain:</span> <span class="text-cyan-100">{{ result.domain }}</span></p>
+                            <p><span class="font-medium text-blue-200">HTTPS:</span> 
+                                {% if result.https %}
+                                    <span class="text-green-400 flex items-center"><i class="fas fa-check-circle mr-2"></i> Secure Connection</span>
+                                {% else %}
+                                    <span class="text-red-400 flex items-center"><i class="fas fa-times-circle mr-2"></i> Not Secure</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-xl status-safe">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-300 flex items-center">
+                            <i class="fas fa-server mr-3"></i> Server Information
+                        </h3>
+                        <div class="space-y-3">
+                            <p><span class="font-medium text-blue-200">IP Address:</span> <span class="text-blue-100">{{ result.ip_address }}</span></p>
+                            <p><span class="font-medium text-blue-200">Domain Age:</span> <span class="text-cyan-100">{{ result.domain_age }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Checks -->
+                <div class="glass-card p-6 rounded-xl status-{% if 'clean' in result.blacklist.lower() and 'clean' in result.virustotal.lower() %}safe{% else %}danger{% endif %}">
+                    <h3 class="text-xl font-semibold mb-4 text-yellow-300 flex items-center">
+                        <i class="fas fa-shield-alt mr-3"></i> Security Checks
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <p class="font-medium text-blue-200">Blacklist Status:</p>
+                            <p class="text-lg {% if 'clean' in result.blacklist.lower() %}text-green-400 flex items-center{% else %}text-red-400 flex items-center{% endif %}">
+                                {% if 'clean' in result.blacklist.lower() %}
+                                <i class="fas fa-check-circle mr-2"></i>
+                                {% else %}
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                {% endif %}
+                                {{ result.blacklist }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-blue-200">Malware Check:</p>
+                            <p class="text-lg {% if 'clean' in result.virustotal.lower() %}text-green-400 flex items-center{% else %}text-red-400 flex items-center{% endif %}">
+                                {% if 'clean' in result.virustotal.lower() %}
+                                <i class="fas fa-check-circle mr-2"></i>
+                                {% else %}
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                {% endif %}
+                                {{ result.virustotal }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- WHOIS Information -->
+                <div class="glass-card p-6 rounded-xl status-safe">
+                    <h3 class="text-xl font-semibold mb-4 text-green-300 flex items-center">
+                        <i class="fas fa-database mr-3"></i> WHOIS Information
+                    </h3>
+                    <div class="space-y-4">
+                        <p><span class="font-medium text-blue-200">Registrar:</span> <span class="text-blue-100">{{ result.whois.registrar }}</span></p>
+                        <div>
+                            <p class="font-medium text-blue-200 mb-2">Name Servers:</p>
+                            <ul class="list-disc list-inside space-y-1 text-blue-100">
+                                {% for ns in result.whois.name_servers %}
+                                    <li class="ml-4">{{ ns }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Analysis -->
+                <div class="glass-card p-6 rounded-xl status-warning">
+                    <h3 class="text-xl font-semibold mb-4 text-purple-300 flex items-center">
+                        <i class="fas fa-robot mr-3"></i> AI Threat Analysis
+                    </h3>
+                    <div class="bg-black bg-opacity-30 p-5 rounded-xl custom-scrollbar" style="max-height: 250px; overflow-y: auto;">
+                        <pre class="text-green-300 font-mono whitespace-pre-wrap">{{ result.ai_result }}</pre>
+                    </div>
+                    <div class="mt-4 flex items-center text-yellow-300">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span class="text-sm">This analysis is generated by AI and should be used as guidance only</span>
+                    </div>
+                </div>
+                
+                <!-- Final Verdict -->
+                <div class="text-center p-8 rounded-xl bg-gradient-to-r {% if 'safe' in result.ai_result.lower() %}from-green-900 to-cyan-900{% else %}from-red-900 to-purple-900{% endif %}">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center justify-center">
+                        
+                    <p class="text-2xl font-semibold mb-4">
+                        {% if 'safe' in result.ai_result.lower() %}
+                            <span class="text-green-300 flex items-center justify-center"><i class="fas fa-check-circle mr-3"></i> </span>
+                        {% else %}
+                            <span class="text-red-300 flex items-center justify-center"><i class="fas fa-exclamation-triangle mr-3"></i> Potential security threat detected</span>
+                        {% endif %}
+                    </p>
+                    <p class="text-blue-200"></p>
+                </div>
+                
+                <!-- Download Button -->
+                <div class="text-center pt-6">
+                    <button id="downloadReport" class="btn-download text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center justify-center mx-auto text-lg">
+                        <i class="fas fa-download mr-3"></i> Download Full Report (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Features Section -->
+        <div class="glass-card rounded-2xl p-8 mb-16">
+            <h2 class="text-3xl font-bold text-center mb-12 gradient-text">How It Protects You</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6 card-hover">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-900/30 text-blue-400 mb-5">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-cyan-300">AI Analysis</h3>
+                    <p class="text-blue-200">Advanced machine learning algorithms detect suspicious patterns and potential threats.</p>
+                </div>
+                
+                <div class="text-center p-6 card-hover">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-900/30 text-blue-400 mb-5">
+                        <i class="fas fa-database text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-cyan-300">Real-time Scanning</h3>
+                    <p class="text-blue-200">Checks against updated databases of known malicious sites and phishing URLs.</p>
+                </div>
+                
+                <div class="text-center p-6 card-hover">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-900/30 text-blue-400 mb-5">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-cyan-300">Comprehensive Report</h3>
+                    <p class="text-blue-200">Detailed analysis of domain, server, security status, and threat assessment.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-gray-400">
+            <div class="flex justify-center space-x-8 mb-6">
+                <a href="#" class="hover:text-cyan-300 transition-colors text-lg"><i class="fab fa-github"></i></a>
+                <a href="#" class="hover:text-cyan-300 transition-colors text-lg"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="hover:text-cyan-300 transition-colors text-lg"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="mb-2">© 2023 AI Link Sentinel. All rights reserved.</p>
+            <p class="text-sm">Powered by advanced AI and cybersecurity algorithms</p>
+        </footer>
+    </div>
+
+    <script>
+        // Form submission with loader
+        document.getElementById('urlForm').addEventListener('submit', function(e) {
+            // Show loader
+            const loader = document.getElementById('loader');
+            const progressText = document.getElementById('progress');
+            loader.style.display = 'flex';
+            
+            // Simulate progress (in a real app, this would be based on actual progress)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // In a real application, you would submit the form here
+                    // For demonstration, we'll hide the loader after 3 seconds
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 1000);
+                }
+                progressText.textContent = Math.round(progress) + '%';
+            }, 500);
+        });
+        
+        // PDF download functionality
+        {% if result %}
+        document.getElementById('downloadReport').addEventListener('click', function() {
+            // Create a clone of the report content
+            const reportContent = document.getElementById('report-content').cloneNode(true);
+            
+            // Remove the download button from the clone
+            const downloadBtn = reportContent.querySelector('#downloadReport');
+            if (downloadBtn) {
+                downloadBtn.remove();
+            }
+            
+            // Add some styles for PDF
+            const styles = document.createElement('style');
+            styles.innerHTML = `
+                body { 
+                    font-family: 'Poppins', sans-serif; 
+                    background: #f8fafc; 
+                    color: #0f172a; 
+                    padding: 20px;
+                }
+                .glass-card { 
+                    background: white; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+                    margin-bottom: 20px;
+                    border: 1px solid #e2e8f0;
+                }
+                .gradient-text {
+                    background: linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                }
+                .text-blue-200 { color: #475569; }
+                .text-blue-100 { color: #334155; }
+                .text-cyan-300 { color: #06b6d4; }
+                .text-green-400 { color: #10b981; }
+                .text-red-400 { color: #ef4444; }
+            `;
+            reportContent.prepend(styles);
+            
+            // Create PDF options
+            const options = {
+                margin: 15,
+                filename: 'AI_Link_Sentinel_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Generate and download PDF
+            html2pdf().set(options).from(reportContent).save();
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
